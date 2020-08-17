@@ -29,7 +29,16 @@ Ornament::Ornament(int data_pin) {
   _leds = Adafruit_NeoPixel(led_count, data_pin, NEO_GRB + NEO_KHZ800);
 }
 
+Ornament::Ornament(int data_pin, bool auto_init) {
+  data_pin = data_pin;
+  _leds = Adafruit_NeoPixel(led_count, data_pin, NEO_GRB + NEO_KHZ800);
+  if (auto_init) {
+    init();
+  }
+}
+
 void Ornament::init() {
+  Serial.println("[INFO] Initializing Ornament");
   _leds.begin();
   success_blink();
 }
@@ -77,8 +86,7 @@ void Ornament::set_brightness(int b) {
 }
 
 void Ornament::blink(int n, int c) {
-  Serial.print("[INFO] Blinking LEDs at color ");
-  Serial.println(c);
+  Serial.println("[INFO] Blinking LEDs");
   int i = 0;
 
   // first, clear the LEDs

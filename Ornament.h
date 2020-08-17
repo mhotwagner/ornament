@@ -13,6 +13,7 @@
 class Ornament{
 	public:
 		Ornament(int data_pin);
+        Ornament(int data_pin, bool auto_init);
 
         void init();
 
