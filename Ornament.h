@@ -9,21 +9,17 @@
 
 #include "Arduino.h"
 #include "Logger.h"
-#include "OfflineLogger.h"
 
 #include <Easing.h>
 #include <Adafruit_NeoPixel.h>
 
 class Ornament{
 	public:
+        Ornament(int data_pin, Logger* _logger, bool autoInit, int logLevel);
         Ornament(int data_pin, Logger* _logger, bool autoInit);
 		Ornament(int data_pin, Logger* _logger);
 
-        Ornament(int data_pin, OfflineLogger* _oLogger, bool autoInit);
-        Ornament(int data_pin, OfflineLogger* _oLogger);
-
         Logger* logger;
-        OfflineLogger* oLogger;
 
         void init();
 
@@ -57,8 +53,6 @@ class Ornament{
 
         void breathe();
 
-        bool loggerOnline;
-
 		static const int data_pin;
         static const int led_count;
 
@@ -77,6 +71,8 @@ class Ornament{
 
 	private:
 		Adafruit_NeoPixel _leds;
+
+        int _logLevel;
 
 };
 
