@@ -8,12 +8,22 @@
 #define Ornament_h
 
 #include "Arduino.h"
+#include "Logger.h"
+#include "OfflineLogger.h"
+
+#include <Easing.h>
 #include <Adafruit_NeoPixel.h>
 
 class Ornament{
 	public:
-		Ornament(int data_pin);
-        Ornament(int data_pin, bool auto_init);
+        Ornament(int data_pin, Logger* _logger, bool autoInit);
+		Ornament(int data_pin, Logger* _logger);
+
+        Ornament(int data_pin, OfflineLogger* _oLogger, bool autoInit);
+        Ornament(int data_pin, OfflineLogger* _oLogger);
+
+        Logger* logger;
+        OfflineLogger* oLogger;
 
         void init();
 
@@ -22,6 +32,9 @@ class Ornament{
         void on();
         void on(int c);
         void on(int c, int b);
+
+        void log(String message);
+        void log(double message);
 
         void set_color(int c);
         void set_brightness(int b);
@@ -42,6 +55,10 @@ class Ornament{
 
         void spin();
 
+        void breathe();
+
+        bool loggerOnline;
+
 		static const int data_pin;
         static const int led_count;
 
@@ -55,6 +72,8 @@ class Ornament{
         static const int c_white_75;
         static const int c_white_50;
         static const int c_white_25;
+
+        EasingFunc<Ease::Cubic> ease;
 
 	private:
 		Adafruit_NeoPixel _leds;

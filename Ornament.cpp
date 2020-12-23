@@ -7,7 +7,9 @@
 
 #include "Arduino.h"
 #include "Ornament.h"
+#include "Logger.h"
 
+#include <Easing.h>
 #include <Adafruit_NeoPixel.h>
 
 const int Ornament::led_count = 6;
@@ -24,53 +26,72 @@ const int Ornament::c_white_50 = Adafruit_NeoPixel::Color(255, 255, 127);
 const int Ornament::c_white_25 = Adafruit_NeoPixel::Color(63, 63, 63);
 
 
-Ornament::Ornament(int data_pin) {
+Ornament::Ornament(int data_pin, Logger* _logger, bool autoInit) {
+  logger = _logger;
+  loggerOnline = true;
   data_pin = data_pin;
   _leds = Adafruit_NeoPixel(led_count, data_pin, NEO_GRB + NEO_KHZ800);
-}
-
-Ornament::Ornament(int data_pin, bool auto_init) {
-  data_pin = data_pin;
-  _leds = Adafruit_NeoPixel(led_count, data_pin, NEO_GRB + NEO_KHZ800);
-  if (auto_init) {
+  if (autoInit) {
     init();
   }
 }
 
+Ornament::Ornament(int data_pin, Logger* _logger) {
+  Ornament(data_pin, _logger, false);
+}
+
+Ornament::Ornament(int data_pin, OfflineLogger* _oLogger, bool autoInit) {
+  oLogger = _oLogger;
+  loggerOnline = false;
+  data_pin = data_pin;
+  _leds = Adafruit_NeoPixel(led_count, data_pin, NEO_GRB + NEO_KHZ800);
+  if (autoInit) {
+    init();
+  }
+}
+
+Ornament::Ornament(int data_pin, OfflineLogger* _oLogger) {
+  Ornament(data_pin, _oLogger, false);
+}
+
 void Ornament::init() {
-  Serial.println("[INFO] Initializing Ornament");
   _leds.begin();
-  success_blink();
 }
 
 void Ornament::off() {
-  Serial.println("[INFO] Turning off LEDs");
+  log("[INFO] Turning off LEDs");
   _leds.fill();
   _leds.show();
 }
 
 void Ornament::on() {
-  Serial.println("[INFO] Turning on LEDs");
-  Serial.println("(maybe, honestly it depends on what's in there)");
+  log("[INFO] Turning on LEDs");
   _leds.show();
 }
 
 void Ornament::on(int c) {
-  Serial.print("[Turning on LEDs to color ");
-  Serial.println(c);
+  log("[INFO] Turning on LEDs to color " + c);
   _leds.fill(c);
   _leds.show();
 }
 
 void Ornament::on(int c, int b) {
-  Serial.print("[INFO] Turning on LEDs to color ");
-  Serial.print(c);
-  Serial.print(" at ");
-  Serial.print(b);
-  Serial.println("% brightness");
+  log("[INFO] Turning on LEDs to color " + String(c) + " at " + b + "%");
   _leds.fill(c);
   _leds.setBrightness(b);
   _leds.show();
+}
+
+void Ornament::log(String message) {
+  if (loggerOnline) {
+    logger->log(message);
+  } else {
+    oLogger->log(message);
+  }
+}
+
+void Ornament::log(double message) {
+  log(String(message));
 }
 
 void Ornament::set_color(int c) {
@@ -78,24 +99,25 @@ void Ornament::set_color(int c) {
 }
 
 void Ornament::set_brightness(int b) {
-  Serial.print("[INFO] Setting LED brightness to ");
-  Serial.print(b);
-  Serial.println("%");
+  log("[INFO] Setting LED brightness to " + String(b) + "%");
   _leds.setBrightness(b);
   _leds.show();
 }
 
 void Ornament::blink(int n, int c) {
-  Serial.println("[INFO] Blinking LEDs");
+  log("[INFO] Blinking LEDs");
   int i = 0;
 
-  // first, clear the LEDs
+  // first, lear the LEDs
+  // log("eh?");
   _leds.fill();
+  // log("eh?");
   _leds.show();
+  // log("eh?");
   
   while (i < n) {
     i++;
-    Serial.println("[INFO] blink!");
+    log("[INFO] blink!");
     _leds.fill(c);
     _leds.show();
     delay(100);
@@ -106,27 +128,27 @@ void Ornament::blink(int n, int c) {
 }
 
 void Ornament::blink(int n) {
-  Serial.println("[INFO] Blinking LEDs");
+  log("[INFO] Blinking LEDs");
   blink(n, c_white);
 }
 
 void Ornament::blink() {
-  Serial.println("[INFO] Blinking LEDs");
+  log("[INFO] Blinking LEDs");
   blink(1, c_white);
 }
 
 void Ornament::success_blink() {
-  Serial.println("[INFO] Success blink");
+  log("[INFO] Success blink");
   blink(3, c_green);
 }
 
 void Ornament::error_blink() {
-  Serial.println("[INFO] Error blink");
+  log("[INFO] Error blink");
   blink(3, c_red);
 }
 
 void Ornament::info_blink() {
-  Serial.println("[INFO] Info blink");
+  log("[INFO] Info blink");
   blink(3, c_yellow);
 }
 
@@ -159,17 +181,43 @@ void Ornament::alternate_every_other(int c_a, int c_b) {
 }
 
 void Ornament::xmas() {
-  Serial.println("[INFO] XMAS Mode!");
+  log("[INFO] XMAS Mode!");
   alternate_every_other(c_red, c_green);
 }
 
 void Ornament::jmas() {
-  Serial.println("[INFO] JMAS Mode!");
+  log("[INFO] JMAS Mode!");
   alternate_every_other(c_white, c_blue);
 }
 
+void Ornament::breathe() {
+  log("[INFO] Breathing!");
+  for (int i = 0; i < 10; i++) {
+    if (i%2 != 0) {
+      log("[INFO] breathing in...");
+      for (float j = 0; j < 1; j += .05) {
+        float v = ease.easeInOut(j) * 255;
+        log("[INFO] Step " + String(j) + " " + String(v));
+        _leds.setBrightness((int) v);
+        _leds.show();
+        delay(100);
+      }
+    } else {
+      // breathe out
+      log("[INFO] breathing out...");
+      for (float j = 1; j > 0; j -= .05) {
+        float v = ease.easeInOut(j) * 255;
+        log("[INFO] Step " + String(j) + " " + String(v));
+        _leds.setBrightness((int) v);
+        _leds.show();
+        delay(100);
+      }
+    }
+  }
+}
+
 // void Ornament::spin() {
-//   Serial.println("[INFO] Spinning!");
+//   log("[INFO] Spinning!");
 //   int i = 0;
 //   while (i < 10) {
 //     while (j < 6) {
