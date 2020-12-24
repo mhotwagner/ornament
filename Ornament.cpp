@@ -65,7 +65,7 @@ void Ornament::on() {
 }
 
 void Ornament::on(int c) {
-  logger->log("Turning on LEDs to color " + c, _logLevel);
+  logger->log("Turning on LEDs to color " + String(c), _logLevel);
   _leds.fill(c);
   _leds.show();
 }
@@ -174,24 +174,24 @@ void Ornament::jmas() {
 }
 
 void Ornament::breathe() {
-  logger->log("Breathing!", _logLevel);
+  logger->log("Breathing!", logger->ERROR);
   for (int i = 0; i < 10; i++) {
     if (i%2 != 0) {
-      logger->log("breathing in...", _logLevel);
-      for (float j = 0; j < 1; j += .05) {
-        float v = ease.easeInOut(j) * 255;
-        logger->log("Step " + String(j) + " " + String(v), _logLevel);
-        _leds.setBrightness((int) v);
+      logger->log("breathing in...", logger->ERROR);
+      for (float j = .2; j < .8; j += .05) {
+        int v = (int) (ease.easeInOut(j) * 255);
+        logger->log("Step " + String(j) + " " + String(v), logger->ERROR);
+        _leds.setBrightness(v);
         _leds.show();
         delay(100);
       }
     } else {
       // breathe out
-      logger->log("breathing out...", _logLevel);
-      for (float j = 1; j > 0; j -= .05) {
-        float v = ease.easeInOut(j) * 255;
-        logger->log("Step " + String(j) + " " + String(v), _logLevel);
-        _leds.setBrightness((int) v);
+      logger->log("breathing out...", logger->ERROR);
+      for (float j = .8; j > .2; j -= .05) {
+        int v = (int) (ease.easeInOut(j) * 255);
+        logger->log("Step " + String(j) + " " + String(v), logger->ERROR);
+        _leds.setBrightness(v);
         _leds.show();
         delay(100);
       }
