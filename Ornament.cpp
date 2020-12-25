@@ -178,22 +178,25 @@ void Ornament::breathe() {
   for (int i = 0; i < 10; i++) {
     if (i%2 != 0) {
       logger->log("breathing in...", logger->ERROR);
-      for (float j = .2; j < .8; j += .05) {
+      for (float j = .2; j < .8; j += .02) {
         int v = (int) (ease.easeInOut(j) * 255);
-        logger->log("Step " + String(j) + " " + String(v), logger->ERROR);
-        _leds.setBrightness(v);
-        _leds.show();
-        delay(100);
+        if (v != _leds.getBrightness()) {
+          _leds.setBrightness(v);
+          _leds.show();
+        }
+        delay(25);
       }
     } else {
       // breathe out
       logger->log("breathing out...", logger->ERROR);
-      for (float j = .8; j > .2; j -= .05) {
+      for (float j = .8; j > .2; j -= .0) {
         int v = (int) (ease.easeInOut(j) * 255);
-        logger->log("Step " + String(j) + " " + String(v), logger->ERROR);
-        _leds.setBrightness(v);
-        _leds.show();
-        delay(100);
+        // logger->log("Step " + String(j) + " " + String(v));
+        if (v != _leds.getBrightness()) {
+          _leds.setBrightness(v);
+          _leds.show();
+        }
+        delay(25);
       }
     }
   }
