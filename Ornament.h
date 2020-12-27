@@ -21,6 +21,14 @@ class Ornament{
 
         Logger* logger;
 
+        // next stuff
+        unsigned long nextTime;
+        unsigned long refTime;
+        int offset;
+        void (*next) (Ornament& ornament);
+
+        void execute();
+
         void init();
 
         void off();
@@ -52,20 +60,28 @@ class Ornament{
         void spin();
 
         void breathe();
+        void breathingRainbow();
+
+        uint32_t getRainbowColor(int i);
 
 		static const int data_pin;
         static const int led_count;
 
-        static const int c_red;
-        static const int c_green;
-        static const int c_blue;
-        static const int c_yellow;
-        static const int c_white;
+        static const uint32_t c_red;
+        static const uint32_t c_green;
+        static const uint32_t c_blue;
+        static const uint32_t c_yellow;
+        static const uint32_t c_purple;
+        static const uint32_t c_teal;
+        
 
-        static const int c_white_100;
-        static const int c_white_75;
-        static const int c_white_50;
-        static const int c_white_25;
+        static const uint32_t c_white;
+        static const uint32_t c_white_100;
+        static const uint32_t c_white_75;
+        static const uint32_t c_white_50;
+        static const uint32_t c_white_25;
+
+        static const int rainbow[];
 
         EasingFunc<Ease::Cubic> ease;
 

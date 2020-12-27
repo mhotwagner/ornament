@@ -14,16 +14,21 @@
 
 const int Ornament::led_count = 6;
 
-const int Ornament::c_red = Adafruit_NeoPixel::Color(0, 255, 0);
-const int Ornament::c_green = Adafruit_NeoPixel::Color(255, 0, 0);
-const int Ornament::c_blue =  Adafruit_NeoPixel::Color(0, 0, 255);
-const int Ornament::c_yellow = Adafruit_NeoPixel::Color(255, 255, 0);
-const int Ornament::c_white = Adafruit_NeoPixel::Color(255, 255, 255);
+const uint32_t Ornament::c_red = Adafruit_NeoPixel::Color(0, 255, 0);
+const uint32_t Ornament::c_green = Adafruit_NeoPixel::Color(255, 0, 0);
+const uint32_t Ornament::c_blue =  Adafruit_NeoPixel::Color(0, 0, 255);
 
-const int Ornament::c_white_100 = Adafruit_NeoPixel::Color(255, 255, 255);
-const int Ornament::c_white_75 = Adafruit_NeoPixel::Color(191, 191, 191);
-const int Ornament::c_white_50 = Adafruit_NeoPixel::Color(255, 255, 127);
-const int Ornament::c_white_25 = Adafruit_NeoPixel::Color(63, 63, 63);
+const uint32_t Ornament::c_yellow = Adafruit_NeoPixel::Color(255, 255, 0);
+const uint32_t Ornament::c_purple = Adafruit_NeoPixel::Color(0, 255, 255);
+const uint32_t Ornament::c_teal = Adafruit_NeoPixel::Color(255, 0, 255);
+
+
+const uint32_t Ornament::c_white = Adafruit_NeoPixel::Color(255, 255, 255);
+
+const uint32_t Ornament::c_white_100 = Adafruit_NeoPixel::Color(255, 255, 255);
+const uint32_t Ornament::c_white_75 = Adafruit_NeoPixel::Color(191, 191, 191);
+const uint32_t Ornament::c_white_50 = Adafruit_NeoPixel::Color(255, 255, 127);
+const uint32_t Ornament::c_white_25 = Adafruit_NeoPixel::Color(63, 63, 63);
 
 Ornament::Ornament(int data_pin, Logger* _logger, bool autoInit, int logLevel) {
   logger = _logger;
@@ -47,6 +52,10 @@ Ornament::Ornament(int data_pin, Logger* _logger, bool autoInit) {
 
 Ornament::Ornament(int data_pin, Logger* _logger) {
   Ornament(data_pin, _logger, false);
+}
+
+void Ornament::execute() {
+  if (refTime && nextTime && millis() >= nextTime) next(*this);
 }
 
 void Ornament::init() {
@@ -164,42 +173,154 @@ void Ornament::alternate_every_other(int c_a, int c_b) {
 }
 
 void Ornament::xmas() {
+  refTime = 0;
   logger->log("XMAS Mode!", _logLevel);
   alternate_every_other(c_red, c_green);
 }
 
 void Ornament::jmas() {
+  refTime = 0;
   logger->log("JMAS Mode!", _logLevel);
   alternate_every_other(c_white, c_blue);
 }
 
+// void Ornament::breathe() {
+//   logger->log("Breathing!", logger->ERROR);
+//   for (int i = 0; i < 10; i++) {
+//     if (i%2 != 0) {
+//       logger->log("breathing in...", logger->ERROR);
+//       for (float j = .2; j < .8; j += .02) {
+//         int v = (int) (ease.easeInOut(j) * 255);
+//         if (v != _leds.getBrightness()) {
+//           _leds.setBrightness(v);
+//           _leds.show();
+//         }
+//         delay(25);
+//       }
+//     } else {
+//       // breathe out
+//       logger->log("breathing out...", logger->ERROR);
+//       for (float j = .8; j > .2; j -= .02) {
+//         int v = (int) (ease.easeInOut(j) * 255);
+//         // logger->log("Step " + String(j) + " " + String(v));
+//         if (v != _leds.getBrightness()) {
+//           _leds.setBrightness(v);
+//           _leds.show();
+//         }
+//         delay(25);
+//       }
+//     }
+//   }
+// }
+
 void Ornament::breathe() {
-  logger->log("Breathing!", logger->ERROR);
-  for (int i = 0; i < 10; i++) {
-    if (i%2 != 0) {
-      logger->log("breathing in...", logger->ERROR);
-      for (float j = .2; j < .8; j += .02) {
-        int v = (int) (ease.easeInOut(j) * 255);
-        if (v != _leds.getBrightness()) {
-          _leds.setBrightness(v);
-          _leds.show();
-        }
-        delay(25);
-      }
+  // logger->log("Are we doing this?", logger->ERROR);
+  next = [](Ornament& ornament) {
+    int dt = millis() - ornament.refTime;
+    int step = dt / ornament.offset;
+    int steps = 12; // 5% step
+
+    int dir = (step / steps) % 2;
+    int db = (step % steps);
+    int brightness;
+
+    if (dir) { // down, doesn't really mater which direction
+      brightness = (int) (ornament.ease.easeInOut(0.8 - (db * .05)) * 255);
     } else {
-      // breathe out
-      logger->log("breathing out...", logger->ERROR);
-      for (float j = .8; j > .2; j -= .0) {
-        int v = (int) (ease.easeInOut(j) * 255);
-        // logger->log("Step " + String(j) + " " + String(v));
-        if (v != _leds.getBrightness()) {
-          _leds.setBrightness(v);
-          _leds.show();
-        }
-        delay(25);
-      }
+      brightness = (int) (ornament.ease.easeInOut(0.2 + (db * .05)) * 255);
     }
+    // ornament.logger->log(brightness);
+    if (brightness != ornament._leds.getBrightness()) {
+      ornament._leds.setBrightness(brightness);
+      ornament._leds.show();
+    }
+    ornament.nextTime = millis() + ornament.offset;
+  };
+  refTime = millis();
+  offset = 25;
+  nextTime = refTime + offset;
+  // logger->log(nextTime); 
+}
+
+uint32_t Ornament::getRainbowColor(int n) {
+  switch (n) {
+    case 0:
+      return c_green;
+    case 1:
+      return c_yellow;
+    case 2:
+      return c_red;
+    case 3:
+      return c_purple;
+    case 4:
+      return c_blue;
+    case 5:
+     return c_teal;
   }
+}
+
+void Ornament::breathingRainbow() {
+  logger->log("breathing rainbow!", logger->ERROR);
+  next = [](Ornament& ornament) {
+
+    // ornament.logger->log("ORNAMENT STEP", ornament.logger->ERROR);
+    // ornament.logger->log(ornament.refTime);
+    unsigned long t = millis();
+    // ornament.logger->log(t);
+    unsigned long dt = t - ornament.refTime;
+    // ornament.logger->log(dt);
+    unsigned long step = dt / ornament.offset;
+    // ornament.logger->log(step, ornament.logger->ERROR);
+    
+    int steps = 14; // 5% step
+
+    // ornament.logger->log("STEP" + step);
+    // ornament.logger->log(step, ornament.logger->ERROR);
+
+    unsigned long cycle = step / steps;
+    // ornament.logger->log(cycle, ornament.logger->ERROR);
+    bool dir = !!(cycle % 2);
+    // ornament.logger->log(dir ? "up" : "down", ornament.logger->ERROR);
+    int db = (step % steps);
+    int brightness;
+
+    if (!dir) { // down, doesn't really mater which direction
+      // ornament.logger->log("down", ornament.logger->ERROR);
+      brightness = (int) (ornament.ease.easeInOut(0.8 - (db * .05)) * 255);
+    } else {
+      // ornament.logger->log("up", ornament.logger->ERROR);
+      brightness = (int) (ornament.ease.easeInOut(0.1 + (db * .05)) * 255);
+    }
+
+    // ornament.logger->log(brightness, ornament.logger->ERROR);
+    
+    
+    // if (brightness != ornament._leds.getBrightness()) {
+      // ornament.logger->log("changing brightness");
+      if ((step % 28) == 14) {
+        // ornament.logger->log("XXX CHANGING COLOR", ornament.logger->ERROR);
+        unsigned long rainbowOffset = cycle / 2;
+        unsigned long rainbowStart = rainbowOffset % 6;
+        // ornament.logger->log(rainbowOffset, ornament.logger->ERROR);
+        for (int i = 0; i < 6; i++) {
+          int j = i + (int) rainbowStart;
+          if (j >= 6) j -= 6;
+          // ornament.logger->log(j, ornament.logger->ERROR);
+          // uint32_t rc = ornament.getRainbowColor((int) j);
+          // ornament.logger->log("COLOR");
+          // ornament.logger->log(rc, ornament.logger->ERROR);
+    
+          ornament._leds.setPixelColor(i, ornament.getRainbowColor(j));
+        }
+      }
+      ornament._leds.setBrightness(brightness);
+      ornament._leds.show();
+    // }
+    ornament.nextTime = t + ornament.offset;
+  };
+  refTime = millis();
+  offset = 50;
+  nextTime = refTime + offset;
 }
 
 // void Ornament::spin() {
