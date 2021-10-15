@@ -37,6 +37,10 @@ Ornament::Ornament(int data_pin, bool auto_init) {
   }
 }
 
+char* get_type() {
+  return _type;
+};
+
 void Ornament::init() {
   Serial.println("[INFO] Initializing Ornament");
   _leds.begin();
@@ -128,44 +132,6 @@ void Ornament::error_blink() {
 void Ornament::info_blink() {
   Serial.println("[INFO] Info blink");
   blink(3, c_yellow);
-}
-
-void Ornament::every_other(int c_a, int c_b) {
-  int i = 0;
-  while (i < 6) {
-    if (i % 2 == 0) {
-      _leds.setPixelColor(i, c_a);
-    } else {
-      _leds.setPixelColor(i, c_b);
-    }
-    i++;
-  }
-  _leds.show();
-}
-
-void Ornament::alternate_every_other(int c_a, int c_b) {
-  int i = 0;
-  while (i < 10) {
-    // c_a first
-    every_other(c_a, c_b);
-    delay(500);    
-    // c_b first
-    every_other(c_b, c_a);
-    delay(500);
-    i++;
-  }
-  _leds.fill();
-  _leds.show();
-}
-
-void Ornament::xmas() {
-  Serial.println("[INFO] XMAS Mode!");
-  alternate_every_other(c_red, c_green);
-}
-
-void Ornament::jmas() {
-  Serial.println("[INFO] JMAS Mode!");
-  alternate_every_other(c_white, c_blue);
 }
 
 // void Ornament::spin() {
