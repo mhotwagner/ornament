@@ -16,14 +16,14 @@
 
 class Star : public Ornament {
   public:
-    Star(int data_pin, Logger* _logger, bool autoInit, int logLevel)
-      : Ornament(data_pin, _logger, autoInit, logLevel)
+    Star(int data_pin, Logger* logger, bool auto_init, int log_level)
+      : Ornament(data_pin, 6, logger, auto_init, log_level)
       {};
-    Star(int data_pin, Logger* _logger, bool autoInit)
-      : Ornament(data_pin, _logger, autoInit)
+    Star(int data_pin, Logger* logger, bool auto_init)
+      : Ornament(data_pin, 6, logger, auto_init)
       {};
-    Star(int data_pin, Logger* _logger)
-      : Ornament(data_pin, _logger)
+    Star(int data_pin, Logger* logger)
+      : Ornament(data_pin, 6, logger)
       {};
 };
 #endif

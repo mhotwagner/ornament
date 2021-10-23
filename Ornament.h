@@ -15,11 +15,9 @@
 
 class Ornament{
     public:
-        Ornament(int data_pin, Logger* _logger, bool autoInit, int logLevel);
-        Ornament(int data_pin, Logger* _logger, bool autoInit);
-        Ornament(int data_pin, Logger* _logger);
-
-        Logger* logger;
+        Ornament(int data_pin, int led_count, Logger* logger, bool auto_init, int log_level);
+        Ornament(int data_pin, int led_count, Logger* logger, bool auto_init);
+        Ornament(int data_pin, int led_count, Logger* logger);
 
         // next stuff
         unsigned long nextTime;
@@ -50,6 +48,7 @@ class Ornament{
         void success_blink();
         void error_blink();
         void info_blink();
+        void info_blink(int n);
 
         void every_other(int c_a, int c_b);
         void alternate_every_other(int c_a, int c_b);
@@ -63,9 +62,6 @@ class Ornament{
         void breathingRainbow();
 
         uint32_t getRainbowColor(int i);
-
-        static const int data_pin;
-        static const int led_count;
 
         static const uint32_t c_red;
         static const uint32_t c_green;
@@ -85,8 +81,11 @@ class Ornament{
         EasingFunc<Ease::Cubic> ease;
 
     private:
+        int _data_pin;
+        int _led_count;
         Adafruit_NeoPixel _leds;
-        int _logLevel;
+        Logger* _logger;
+        int _log_level;
 
 };
 
