@@ -45,7 +45,7 @@ Ornament::Ornament(int data_pin, int led_count, Logger* logger, bool auto_init) 
   _data_pin = data_pin;
   _led_count = led_count;
   _logger = logger;
-  _log_level = _logger->INFO;
+  _log_level = _logger->DEBUG;
   _leds = Adafruit_NeoPixel(led_count, data_pin, NEO_GRB + NEO_KHZ800);
   if (auto_init) {
     init();
@@ -267,7 +267,7 @@ uint32_t Ornament::getRainbowColor(int n) {
 }
 
 void Ornament::breathingRainbow() {
-  _logger->log("breathing rainbow!", _logger->ERROR);
+  _logger->log("breathing rainbow!", _logger->log_level);
   next = [](Ornament& ornament) {
 
     // ornament._logger->log("ORNAMENT STEP", ornament._logger->ERROR);
